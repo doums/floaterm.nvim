@@ -4,7 +4,11 @@ local cmd = vim.cmd
 local opt = vim.opt
 
 local terms = {}
-local defaults = {width = 0.5, height = 1}
+local _config = {
+  command = nil,
+  layout = {position = 'center', width = 0.8, height = 0.8},
+  window = {style = 'minimal', relative = 'editor'},
+}
 
 local function on_exit(id, code)
   api.nvim_win_close(terms[id].window, true)
@@ -15,58 +19,63 @@ local function on_exit(id, code)
   terms[id] = nil
 end
 
-local function open_floating_term(_config)
-  local config = {}
-  if _config and _config.options then
-    config.on_exit = _config.options.on_exit
-  end
-  _config = vim.tbl_extend('keep', _config, defaults)
+local function get_window_options(layout)
   local screen_w = opt.columns:get()
-  local screen_h = opt.lines:get()
-  local _width = screen_w * _config.width
-  local _height = screen_h * _config.height
+  local screen_h = opt.lines:get() - opt.cmdheight:get()
+  local _width = screen_w * layout.width
+  local _height = screen_h * layout.height
   local width = math.floor(_width)
   local height = math.floor(_height)
-  local x = (screen_w - _width) / 2
-  local y = 1
+  local center_y = (opt.lines:get() - _height) / 2
+  local center_x = (screen_w - _width) / 2
   local layouts = {
-    bottom = {
-      anchor = 'SE',
-      row = screen_h - opt.cmdheight:get(),
-      col = 0,
+    center = {
+      anchor = 'NW',
+      row = center_y,
+      col = center_x,
       width = width,
-      height = height, -- calculated
+      height = height,
+    },
+    bottom = {
+      anchor = 'SW',
+      row = screen_h,
+      col = center_x,
+      width = width,
+      height = height,
     },
     top = {
-      anchor = 'NE',
+      anchor = 'NW',
       row = 0,
-      col = 0,
+      col = center_x,
       width = width,
-      height = height, -- calculated
+      height = height,
     },
     left = {
       anchor = 'NW',
-      row = 0,
+      row = center_y,
       col = 0,
       width = width,
-      height = height - opt.cmdheight:get(), -- calculated
+      height = height,
     },
     right = {
       anchor = 'NE',
-      row = 0,
-      col = 0,
+      row = center_y,
+      col = screen_w,
       width = width,
-      height = height - opt.cmdheight:get(), -- calculated
+      height = height,
     },
   }
-  local window_config = vim.tbl_extend('force', {
-    relative = 'editor',
-    style = 'minimal',
-  }, layouts.right)
-  config.buffer = api.nvim_create_buf(true, false)
-  config.window = api.nvim_open_win(config.buffer, true, window_config)
-  local term_config = vim.tbl_deep_extend('keep', {on_exit = on_exit},
-                                          _config.options)
+  return layouts[layout.position]
+end
+
+local function open_floating_term(config)
+  local term = {on_exit = config.on_exit}
+  _config = vim.tbl_extend('force', _config, config)
+  term.buffer = api.nvim_create_buf(true, false)
+  local window_options = vim.tbl_extend('force', _config.window,
+                                        get_window_options(_config.layout))
+  term.window = api.nvim_open_win(term.buffer, true, window_options)
+  local term_config = vim.tbl_deep_extend('keep', {on_exit = on_exit}, _config)
   local job_id = fn.termopen(_config.command, term_config)
   -- api.nvim_buf_set_name(config.buffer, _config.name or 'floaterm')
   if job_id == 0 then
@@ -76,10 +85,10 @@ local function open_floating_term(_config)
     api.nvim_err_writeln '[floaterm] termopen() failed, command or shell is not executable'
     return
   end
-  config.job_id = job_id
-  terms[job_id] = config
+  term.job_id = job_id
+  terms[job_id] = term
   cmd 'startinsert'
-  return config
+  return term
 end
 
 local M = {open_floating_term = open_floating_term}

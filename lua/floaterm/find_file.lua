@@ -66,7 +66,9 @@ local function find_file(directory)
                     tail .. [[ " > ]] .. tempfile
   local config = {
     command = command,
-    options = {on_exit = on_exit, name = 'find file', cwd = cwd},
+    on_exit = on_exit,
+    name = 'find file',
+    cwd = cwd,
   }
   ft.open_floating_term(config)
 end
