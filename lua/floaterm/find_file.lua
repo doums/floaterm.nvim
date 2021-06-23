@@ -69,6 +69,7 @@ local function find_file(directory)
     on_exit = on_exit,
     name = 'find file',
     cwd = cwd,
+    layout = {position = 'top', width = 1, height = 0.6}
   }
   ft.open_floating_term(config)
 end
