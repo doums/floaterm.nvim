@@ -4,7 +4,7 @@ local cmd = vim.cmd
 local opt = vim.opt
 
 local terms = {}
-local defaults = {width = 0.8, height = 0.8}
+local defaults = {width = 0.5, height = 1}
 
 local function on_exit(id, code)
   api.nvim_win_close(terms[id].window, true)
@@ -28,16 +28,43 @@ local function open_floating_term(_config)
   local width = math.floor(_width)
   local height = math.floor(_height)
   local x = (screen_w - _width) / 2
-  local y = (screen_h - _height) / 2
-  config.buffer = api.nvim_create_buf(true, false)
-  config.window = api.nvim_open_win(config.buffer, true, {
+  local y = 1
+  local layouts = {
+    bottom = {
+      anchor = 'SE',
+      row = screen_h - opt.cmdheight:get(),
+      col = 0,
+      width = width,
+      height = height, -- calculated
+    },
+    top = {
+      anchor = 'NE',
+      row = 0,
+      col = 0,
+      width = width,
+      height = height, -- calculated
+    },
+    left = {
+      anchor = 'NW',
+      row = 0,
+      col = 0,
+      width = width,
+      height = height - opt.cmdheight:get(), -- calculated
+    },
+    right = {
+      anchor = 'NE',
+      row = 0,
+      col = 0,
+      width = width,
+      height = height - opt.cmdheight:get(), -- calculated
+    },
+  }
+  local window_config = vim.tbl_extend('force', {
     relative = 'editor',
-    width = width,
-    height = height,
-    row = y,
-    col = x,
     style = 'minimal',
-  })
+  }, layouts.right)
+  config.buffer = api.nvim_create_buf(true, false)
+  config.window = api.nvim_open_win(config.buffer, true, window_config)
   local term_config = vim.tbl_deep_extend('keep', {on_exit = on_exit},
                                           _config.options)
   local job_id = fn.termopen(_config.command, term_config)
