@@ -59,17 +59,15 @@ local function find_file(directory)
     cwd = directory
   end
   local cwd_sub = cwd:gsub(env.HOME, '~')
-  local path_items = vim.split(cwd_sub, '/')
-  local tail = path_items[#path_items] or cwd_sub
   local keys = table.concat(vim.tbl_values(actions), ',')
-  local command = fzf_command .. [[ --expect="]] .. keys .. [[" --prompt="]] ..
-                    tail .. [[ " > ]] .. tempfile
+  local command = fzf_command .. [[ --expect="]] .. keys .. [[" --header="]] ..
+                    cwd_sub .. [[ " > ]] .. tempfile
   local config = {
     command = command,
     on_exit = on_exit,
     name = 'find file',
     cwd = cwd,
-    layout = {position = 'top', width = 1, height = 0.6}
+    layout = {position = 'top', width = 1, height = 0.8},
   }
   ft.open_floating_term(config)
 end
