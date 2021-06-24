@@ -68,12 +68,13 @@ local function get_window_options(layout)
   return layouts[layout.position]
 end
 
-local function open_floating_term(config)
+local function open(config)
+  -- print(vim.inspect(config))
   local term = {on_exit = config.on_exit}
-  _config = vim.tbl_extend('force', _config, config)
+  _config = vim.tbl_deep_extend('force', _config, config)
   term.buffer = api.nvim_create_buf(true, false)
-  local window_options = vim.tbl_extend('force', _config.window,
-                                        get_window_options(_config.layout))
+  local window_options = vim.tbl_deep_extend('force', _config.window,
+                                             get_window_options(_config.layout))
   term.window = api.nvim_open_win(term.buffer, true, window_options)
   local term_config = vim.tbl_deep_extend('keep', {on_exit = on_exit}, _config)
   local job_id = fn.termopen(_config.command, term_config)
@@ -91,6 +92,6 @@ local function open_floating_term(config)
   return term
 end
 
-local M = {open_floating_term = open_floating_term}
+local M = {open = open}
 
 return M

@@ -4,7 +4,7 @@ local cmd = vim.cmd
 local uv = vim.loop
 local env = vim.env
 
-local ft = require 'floaterm.open_floating_term'
+local ft = require 'floaterm.open'
 local utils = require 'floaterm.utils'
 local preview_command = fn.executable('bat') and
                           'COLORTERM=truecolor bat --line-range :50 --color=always' or
@@ -13,7 +13,8 @@ local fzf_command =
   [[fzf --multi --preview-window=right:70%:noborder --preview="]] ..
     preview_command .. [[ {}"]]
 local tempfile = nil
-local actions = {split = 'ctrl-s', vsplit = 'ctrl-v', tab = 'ctrl-t'}
+local actions = {split = 'ctrl-s', vsplit = 'ctrl-v', tabedit = 'ctrl-t'}
+local config = {}
 
 local function get_action(fzf_key)
   for action, value in pairs(actions) do
@@ -33,16 +34,11 @@ local function on_exit(_, code)
     return
   end
   local action = get_action(lines[1])
-  table.remove(lines, 1)
-  if action == '' then
-    cmd('edit ' .. lines[1])
-  elseif action == 'split' then
-    cmd('split ' .. lines[1])
-  elseif action == 'vsplit' then
-    cmd('vsplit ' .. lines[1])
-  elseif action == 'tab' then
-    cmd('tabedit ' .. lines[1])
+  if #action == 0 then
+    action = 'edit'
   end
+  table.remove(lines, 1)
+  cmd(string.format('%s %s', action, lines[1]))
   table.remove(lines, 1)
   for _, file in ipairs(lines) do
     cmd('badd ' .. file)
@@ -62,16 +58,22 @@ local function find_file(directory)
   local keys = table.concat(vim.tbl_values(actions), ',')
   local command = fzf_command .. [[ --expect="]] .. keys .. [[" --header="]] ..
                     cwd_sub .. [[ " > ]] .. tempfile
-  local config = {
+  local _config = {
     command = command,
     on_exit = on_exit,
     name = 'find file',
     cwd = cwd,
-    layout = {position = 'top', width = 1, height = 0.8},
   }
-  ft.open_floating_term(config)
+  _config = vim.tbl_deep_extend('force', config, _config)
+  ft.open(_config)
 end
 
-local M = {find_file = find_file}
+local function init(_config)
+  if _config then
+    config = vim.tbl_extend('force', config, {layout = _config})
+  end
+end
+
+local M = {find_file = find_file, init = init}
 
 return M
