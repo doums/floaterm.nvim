@@ -1,3 +1,4 @@
+local api = vim.api
 local fn = vim.fn
 local cmd = vim.cmd
 local uv = vim.loop
@@ -37,8 +38,9 @@ local function on_exit(_, code)
   if #action == 0 then
     action = 'edit'
   end
-  local file = vim.split(lines[2], ':')[1]
-  cmd(string.format('%s %s', action, file))
+  local data = vim.split(lines[2], ':')
+  cmd(string.format('%s %s', action, data[1]))
+  api.nvim_win_set_cursor(0, {tonumber(data[2]), tonumber(data[3]) - 1})
 end
 
 local function rg()
