@@ -6,8 +6,10 @@ local opt = vim.opt
 local terms = {}
 local _config = {
   command = nil,
-  layout = {position = 'center', width = 0.8, height = 0.8},
-  window = {style = 'minimal', relative = 'editor'},
+  position = 'center',
+  width = 0.8,
+  height = 0.8,
+  win_api = {style = 'minimal', relative = 'editor'},
 }
 
 local function on_exit(id, code)
@@ -19,11 +21,11 @@ local function on_exit(id, code)
   terms[id] = nil
 end
 
-local function get_window_options(layout)
+local function get_window_layout(config)
   local screen_w = opt.columns:get()
   local screen_h = opt.lines:get() - opt.cmdheight:get()
-  local _width = screen_w * layout.width
-  local _height = screen_h * layout.height
+  local _width = screen_w * config.width
+  local _height = screen_h * config.height
   local width = math.floor(_width)
   local height = math.floor(_height)
   local center_y = (opt.lines:get() - _height) / 2
@@ -65,19 +67,19 @@ local function get_window_options(layout)
       height = height,
     },
   }
-  return layouts[layout.position]
+  return layouts[config.position]
 end
 
 local function open(config)
-  -- print(vim.inspect(config))
   local term = {on_exit = config.on_exit}
-  _config = vim.tbl_deep_extend('force', _config, config)
+  local current_cfg = vim.deepcopy(_config)
+  current_cfg = vim.tbl_deep_extend('force', current_cfg, config)
   term.buffer = api.nvim_create_buf(true, false)
-  local window_options = vim.tbl_deep_extend('force', _config.window,
-                                             get_window_options(_config.layout))
-  term.window = api.nvim_open_win(term.buffer, true, window_options)
-  local term_config = vim.tbl_deep_extend('keep', {on_exit = on_exit}, _config)
-  local job_id = fn.termopen(_config.command, term_config)
+  local win_options = vim.tbl_deep_extend('force', current_cfg.win_api,
+                                             get_window_layout(current_cfg))
+  term.window = api.nvim_open_win(term.buffer, true, win_options)
+  current_cfg.on_exit = on_exit
+  local job_id = fn.termopen(current_cfg.command, current_cfg)
   -- api.nvim_buf_set_name(config.buffer, _config.name or 'floaterm')
   if job_id == 0 then
     api.nvim_err_writeln '[floaterm] termopen() failed, invalid argument (or job table is full)'

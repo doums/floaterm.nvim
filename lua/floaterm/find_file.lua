@@ -14,7 +14,7 @@ local fzf_command =
     preview_command .. [[ {}"]]
 local tempfile = nil
 local actions = {split = 'ctrl-s', vsplit = 'ctrl-v', tabedit = 'ctrl-t'}
-local config = {}
+local _config = {}
 
 local function get_action(fzf_key)
   for action, value in pairs(actions) do
@@ -58,19 +58,19 @@ local function find_file(directory)
   local keys = table.concat(vim.tbl_values(actions), ',')
   local command = fzf_command .. [[ --expect="]] .. keys .. [[" --header="]] ..
                     cwd_sub .. [[ " > ]] .. tempfile
-  local _config = {
+  local config = {
     command = command,
     on_exit = on_exit,
     name = 'find file',
     cwd = cwd,
   }
-  _config = vim.tbl_deep_extend('force', config, _config)
-  ft.open(_config)
+  config = vim.tbl_deep_extend('force', _config, config)
+  ft.open(config)
 end
 
-local function init(_config)
-  if _config then
-    config = vim.tbl_extend('force', config, {layout = _config})
+local function init(config)
+  if config then
+    _config = vim.tbl_extend('force', _config, config)
   end
 end
 
