@@ -4,16 +4,16 @@ local cmd = vim.cmd
 local uv = vim.loop
 local env = vim.env
 
-local ft = require 'floaterm.open'
-local utils = require 'floaterm.utils'
-local preview_command = fn.executable('bat') and
-                          'COLORTERM=truecolor bat --line-range :50 --color=always' or
-                          'cat'
-local fzf_command =
-  [[fzf --multi --preview-window=right:70%:noborder --preview="]] ..
-    preview_command .. [[ {}"]]
+local ft = require('floaterm.open')
+local utils = require('floaterm.utils')
+local preview_command = fn.executable('bat')
+    and 'COLORTERM=truecolor bat --line-range :50 --color=always'
+  or 'cat'
+local fzf_command = [[fzf --multi --preview-window=right:70%:noborder --preview="]]
+  .. preview_command
+  .. [[ {}"]]
 local tempfile = nil
-local actions = {split = 'ctrl-s', vsplit = 'ctrl-v', tabedit = 'ctrl-t'}
+local actions = { split = 'ctrl-s', vsplit = 'ctrl-v', tabedit = 'ctrl-t' }
 local _config = {}
 
 local function get_action(fzf_key)
@@ -56,8 +56,13 @@ local function find_file(directory)
   end
   local cwd_sub = cwd:gsub(env.HOME, '~')
   local keys = table.concat(vim.tbl_values(actions), ',')
-  local command = fzf_command .. [[ --expect="]] .. keys .. [[" --header="]] ..
-                    cwd_sub .. [[ " > ]] .. tempfile
+  local command = fzf_command
+    .. [[ --expect="]]
+    .. keys
+    .. [[" --header="]]
+    .. cwd_sub
+    .. [[ " > ]]
+    .. tempfile
   local config = {
     command = command,
     on_exit = on_exit,
@@ -74,6 +79,6 @@ local function init(config)
   end
 end
 
-local M = {find_file = find_file, init = init}
+local M = { find_file = find_file, init = init }
 
 return M

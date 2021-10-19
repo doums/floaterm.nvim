@@ -1,5 +1,5 @@
-local find_file = require'floaterm.find_file'
-local rg = require'floaterm.rg'
+local find_file = require('floaterm.find_file')
+local rg = require('floaterm.rg')
 
 local function setup(config)
   find_file.init(config.find_file or config)
@@ -10,7 +10,7 @@ local M = {
   setup = setup,
   find_file = find_file.find_file,
   rg = rg.rg,
-  open = require'floaterm.open'.open,
+  open = require('floaterm.open').open,
 }
 
 return M
