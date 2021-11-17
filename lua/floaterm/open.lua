@@ -82,7 +82,7 @@ local function open(config)
   )
   term.window = api.nvim_open_win(term.buffer, true, win_options)
   current_cfg.on_exit = on_exit
-  local job_id = fn.termopen(current_cfg.command, current_cfg)
+  local job_id = fn.termopen(current_cfg.command or opt.shell:get(), current_cfg)
   -- api.nvim_buf_set_name(config.buffer, _config.name or 'floaterm')
   if job_id == 0 then
     api.nvim_err_writeln('[floaterm] termopen() failed, invalid argument (or job table is full)')
