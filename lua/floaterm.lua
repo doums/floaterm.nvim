@@ -1,16 +1,13 @@
-local find_file = require('floaterm.find_file')
-local rg = require('floaterm.rg')
+local _config = require('floaterm.config')
+local open = require('floaterm.open')
 
 local function setup(config)
-  find_file.init(config.find_file or config)
-  rg.init(config.rg or config)
+  _config.init(config)
 end
 
 local M = {
   setup = setup,
-  find_file = find_file.find_file,
-  rg = rg.rg,
-  open = require('floaterm.open').open,
+  open = open.open,
 }
 
 return M

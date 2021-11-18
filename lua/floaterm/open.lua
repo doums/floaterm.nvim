@@ -2,18 +2,9 @@ local api = vim.api
 local fn = vim.fn
 local cmd = vim.cmd
 local opt = vim.opt
+local _config = require('floaterm.config')
 
 local terms = {}
-local _config = {
-  command = nil,
-  layout = nil,
-  width = 0.8,
-  height = 0.8,
-  row = 0,
-  col = 0,
-  win_api = { style = 'minimal', relative = 'editor' },
-  keymaps = { exit = '<A-q>', normal = '<A-n>' },
-}
 
 local function on_exit(id, code)
   api.nvim_win_close(terms[id].window, true)
@@ -74,16 +65,19 @@ local function get_window_layout(config)
 end
 
 local function open(config)
+  config = vim.tbl_deep_extend(
+    'force',
+    vim.deepcopy(_config.get_config()),
+    config or {}
+  )
   local term = { on_exit = config.on_exit }
-  local current_cfg = vim.deepcopy(_config)
-  current_cfg = vim.tbl_deep_extend('force', current_cfg, config)
   term.buffer = api.nvim_create_buf(true, false)
-  local win_options = current_cfg.win_api
+  local win_options = config.win_api
   if config.layout then
     win_options = vim.tbl_deep_extend(
       'force',
-      current_cfg.win_api,
-      get_window_layout(current_cfg)
+      config.win_api,
+      get_window_layout(config)
     )
   end
   term.window = api.nvim_open_win(term.buffer, true, win_options)
@@ -92,22 +86,19 @@ local function open(config)
     cmd('hi! floatermWin guibg=' .. config.bg_color)
     opt.winhighlight:prepend('NormalFloat:floatermWin,')
   end
-  current_cfg.on_exit = on_exit
-  local job_id = fn.termopen(
-    current_cfg.command or { opt.shell:get() },
-    current_cfg
-  )
+  config.on_exit = on_exit
+  local job_id = fn.termopen(config.command or { opt.shell:get() }, config)
   api.nvim_buf_set_keymap(
     term.buffer,
     't',
-    current_cfg.keymaps.exit,
+    config.keymaps.exit,
     '<Cmd>call jobstop(' .. job_id .. ')<CR>',
     { noremap = true }
   )
   api.nvim_buf_set_keymap(
     term.buffer,
     't',
-    current_cfg.keymaps.normal,
+    config.keymaps.normal,
     '<C-\\><C-N>',
     { noremap = true }
   )
