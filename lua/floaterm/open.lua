@@ -2,6 +2,8 @@ local api = vim.api
 local fn = vim.fn
 local cmd = vim.cmd
 local opt = vim.opt
+local uv = vim.loop
+
 local _config = require('floaterm.config')
 
 local terms = {}
@@ -102,7 +104,10 @@ local function open(config)
     '<C-\\><C-N>',
     { noremap = true }
   )
-  -- api.nvim_buf_set_name(config.buffer, _config.name or 'floaterm')
+  api.nvim_buf_set_name(
+    term.buffer,
+    string.format('%s[%s]', config.name, uv.random(2))
+  )
   if job_id == 0 then
     api.nvim_err_writeln(
       '[floaterm] termopen() failed, invalid argument (or job table is full)'

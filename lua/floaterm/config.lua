@@ -8,6 +8,7 @@ local _config = {
   col = 0,
   win_api = { style = 'minimal', relative = 'editor' },
   keymaps = { exit = '<A-q>', normal = '<A-n>' },
+  name = 'fterm',
 }
 
 local function init(config)
