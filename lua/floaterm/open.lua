@@ -6,10 +6,13 @@ local opt = vim.opt
 local terms = {}
 local _config = {
   command = nil,
-  position = 'center',
+  layout = nil,
   width = 0.8,
   height = 0.8,
+  row = 0,
+  col = 0,
   win_api = { style = 'minimal', relative = 'editor' },
+  keymaps = { exit = '<A-q>', normal = '<A-n>' },
 }
 
 local function on_exit(id, code)
@@ -33,41 +36,41 @@ local function get_window_layout(config)
   local layouts = {
     center = {
       anchor = 'NW',
-      row = center_y,
-      col = center_x,
+      row = center_y + config.row,
+      col = center_x + config.col,
       width = width,
       height = height,
     },
     bottom = {
       anchor = 'SW',
-      row = screen_h,
-      col = center_x,
+      row = screen_h - config.row,
+      col = center_x - config.col,
       width = width,
       height = height,
     },
     top = {
       anchor = 'NW',
-      row = 0,
-      col = center_x,
+      row = 0 + config.row,
+      col = center_x - config.col,
       width = width,
       height = height,
     },
     left = {
       anchor = 'NW',
-      row = center_y,
-      col = 0,
+      row = center_y + config.row,
+      col = 0 + config.col,
       width = width,
       height = height,
     },
     right = {
       anchor = 'NE',
-      row = center_y,
-      col = screen_w,
+      row = center_y + config.row,
+      col = screen_w - config.col,
       width = width,
       height = height,
     },
   }
-  return layouts[config.position]
+  return layouts[config.layout]
 end
 
 local function open(config)
@@ -75,20 +78,49 @@ local function open(config)
   local current_cfg = vim.deepcopy(_config)
   current_cfg = vim.tbl_deep_extend('force', current_cfg, config)
   term.buffer = api.nvim_create_buf(true, false)
-  local win_options = vim.tbl_deep_extend(
-    'force',
-    current_cfg.win_api,
-    get_window_layout(current_cfg)
-  )
+  local win_options = current_cfg.win_api
+  if config.layout then
+    win_options = vim.tbl_deep_extend(
+      'force',
+      current_cfg.win_api,
+      get_window_layout(current_cfg)
+    )
+  end
   term.window = api.nvim_open_win(term.buffer, true, win_options)
+  if config.bg_color then
+    -- api.nvim_set_hl(0, 'floatermWin', { guibg = config.bg_color })
+    cmd('hi! floatermWin guibg=' .. config.bg_color)
+    opt.winhighlight:prepend('NormalFloat:floatermWin,')
+  end
   current_cfg.on_exit = on_exit
-  local job_id = fn.termopen(current_cfg.command or opt.shell:get(), current_cfg)
+  local job_id = fn.termopen(
+    current_cfg.command or { opt.shell:get() },
+    current_cfg
+  )
+  api.nvim_buf_set_keymap(
+    term.buffer,
+    't',
+    current_cfg.keymaps.exit,
+    '<Cmd>call jobstop(' .. job_id .. ')<CR>',
+    { noremap = true }
+  )
+  api.nvim_buf_set_keymap(
+    term.buffer,
+    't',
+    current_cfg.keymaps.normal,
+    '<C-\\><C-N>',
+    { noremap = true }
+  )
   -- api.nvim_buf_set_name(config.buffer, _config.name or 'floaterm')
   if job_id == 0 then
-    api.nvim_err_writeln('[floaterm] termopen() failed, invalid argument (or job table is full)')
+    api.nvim_err_writeln(
+      '[floaterm] termopen() failed, invalid argument (or job table is full)'
+    )
     return
   elseif job_id == -1 then
-    api.nvim_err_writeln('[floaterm] termopen() failed, command or shell is not executable')
+    api.nvim_err_writeln(
+      '[floaterm] termopen() failed, command or shell is not executable'
+    )
     return
   end
   term.job_id = job_id
