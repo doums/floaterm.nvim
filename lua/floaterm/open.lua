@@ -41,14 +41,14 @@ local function get_window_layout(config)
     bottom = {
       anchor = 'SW',
       row = screen_h - config.row,
-      col = center_x - config.col,
+      col = center_x + config.col,
       width = width,
       height = height,
     },
     top = {
       anchor = 'NW',
       row = 0 + config.row,
-      col = center_x - config.col,
+      col = center_x + config.col,
       width = width,
       height = height,
     },
