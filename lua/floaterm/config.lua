@@ -23,6 +23,8 @@ local _config = {
   keymaps = { exit = '<A-q>', normal = '<A-n>' },
   -- Terminal buffer name
   name = 'fterm',
+  -- Customize the background color
+  bg_color = nil, -- as hex color string eg. '#212121'
 }
 
 local function init(config)

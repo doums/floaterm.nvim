@@ -29,7 +29,8 @@ require('floaterm').setup({
 })
 ```
 
-All default values are listed [here](https://github.com/doums/floaterm.nvim/blob/main/lua/floaterm/config.lua).
+All default values are listed
+[here](https://github.com/doums/floaterm.nvim/blob/main/lua/floaterm/config.lua).
 
 ```lua
 local _config = {
@@ -52,6 +53,8 @@ local _config = {
   keymaps = { exit = '<A-q>', normal = '<A-n>' },
   -- Terminal buffer name
   name = 'fterm',
+  -- Customize the background color
+  bg_color = nil, -- as hex color string eg. '#212121'
 }
 ```
 
@@ -68,10 +71,6 @@ map(
 NOTE: You can add more custom options in the config to configure
 the spawned job as the config table is passed down to the
 `termopen` function (`:h termopen`, `:h jobstart`).
-
-#### `name`: string
-
-The name of the terminal buffer.
 
 ### Usage
 
