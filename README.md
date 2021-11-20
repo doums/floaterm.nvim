@@ -34,7 +34,7 @@ All default values are listed
 
 ```lua
 local _config = {
-  -- The command to run as a job, if nil run a 'shell'.
+  -- The command to run as a job, if nil run the 'shell'.
   command = nil, -- string or list of string
   -- The placement in the editor of the floating window.
   layout = 'center', -- center | bottom | top | left | right
