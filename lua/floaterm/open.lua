@@ -1,3 +1,7 @@
+--[[ This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at https://mozilla.org/MPL/2.0/. ]]
+
 local api = vim.api
 local fn = vim.fn
 local cmd = vim.cmd
@@ -66,6 +70,13 @@ local function get_window_layout(config)
   return layouts[config.layout]
 end
 
+local function create_keymaps(buffer, mapping)
+  for lhs, rhs in pairs(mapping) do
+    api.nvim_buf_set_keymap(buffer, 'n', lhs, rhs, { noremap = true })
+    api.nvim_buf_set_keymap(buffer, 't', lhs, rhs, { noremap = true })
+  end
+end
+
 local function open(config)
   config = vim.tbl_deep_extend(
     'force',
@@ -90,20 +101,10 @@ local function open(config)
   end
   config.on_exit = on_exit
   local job_id = fn.termopen(config.command or { opt.shell:get() }, config)
-  api.nvim_buf_set_keymap(
-    term.buffer,
-    't',
-    config.keymaps.exit,
-    '<Cmd>call jobstop(' .. job_id .. ')<CR>',
-    { noremap = true }
-  )
-  api.nvim_buf_set_keymap(
-    term.buffer,
-    't',
-    config.keymaps.normal,
-    '<C-\\><C-N>',
-    { noremap = true }
-  )
+  create_keymaps(term.buffer, {
+    [config.keymaps.exit] = '<Cmd>call jobstop(' .. job_id .. ')<CR>',
+    [config.keymaps.normal] = '<C-\\><C-N>',
+  })
   api.nvim_buf_set_name(
     term.buffer,
     string.format('%s[%s]', config.name, uv.random(2))
