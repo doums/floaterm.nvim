@@ -89,3 +89,7 @@ map(
 You can also use the command `:Fterm` to spawn a shell/command
 using the global config.
 
+### License
+
+Mozilla Public License 2.0
+
