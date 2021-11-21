@@ -77,6 +77,17 @@ local function create_keymaps(buffer, mapping)
   end
 end
 
+local function set_hl(config)
+  if config.bg_color then
+    -- TODO use api.nvim_set_hl instead
+    cmd('hi! floatermWin guibg=' .. config.bg_color)
+    opt.winhighlight:prepend('NormalFloat:floatermWin,')
+  end
+  if config.border_hl then
+    opt.winhighlight:prepend(string.format('FloatBorder:%s,', config.border_hl))
+  end
+end
+
 local function open(config)
   config = vim.tbl_deep_extend(
     'force',
@@ -94,11 +105,7 @@ local function open(config)
     )
   end
   term.window = api.nvim_open_win(term.buffer, true, win_options)
-  if config.bg_color then
-    -- api.nvim_set_hl(0, 'floatermWin', { guibg = config.bg_color })
-    cmd('hi! floatermWin guibg=' .. config.bg_color)
-    opt.winhighlight:prepend('NormalFloat:floatermWin,')
-  end
+  set_hl(config)
   config.on_exit = on_exit
   local job_id = fn.termopen(config.command or { opt.shell:get() }, config)
   create_keymaps(term.buffer, {

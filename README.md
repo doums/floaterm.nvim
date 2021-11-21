@@ -47,14 +47,17 @@ local _config = {
   row = 0,
   col = 0,
   -- Options passed to nvim_open_win (:h nvim_open_win())
+  -- You can use it to customize various things like border etc.
   win_api = { style = 'minimal', relative = 'editor' },
   -- Some mapping, exit: close the job and the window, normal:
   -- switch to normal mode
   keymaps = { exit = '<A-q>', normal = '<A-n>' },
   -- Terminal buffer name
   name = 'fterm',
-  -- Customize the background color
+  -- Background color, default use the color from NormalFloat
   bg_color = nil, -- as hex color string eg. #212121
+  -- Border highlight group, default FloatBorder
+  border_hl = nil,
 }
 ```
 
