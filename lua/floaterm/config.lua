@@ -28,6 +28,8 @@ local _config = {
   bg_color = nil, -- as hex color string eg. #212121
   -- Border highlight group, default FloatBorder
   border_hl = nil,
+  -- `on_exit` a optional function to call when the terminal's job
+  -- exits. It will receive the job ID and exit code as argument.
 }
 
 local function init(config)
